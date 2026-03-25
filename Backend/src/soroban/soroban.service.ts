@@ -25,28 +25,47 @@ export interface GistEvent {
   createdAt: number;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  label: string,
+  maxAttempts = 3,
+  logger?: Logger,
+): Promise<T> {
+  let lastError: Error = new Error('Unknown error');
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err as Error;
+      logger?.warn(`${label} attempt ${attempt}/${maxAttempts} failed: ${lastError.message}`);
+      if (attempt < maxAttempts) await sleep(200 * attempt);
+    }
+  }
+  throw lastError;
+}
+
 @Injectable()
 export class SorobanService {
   private readonly logger = new Logger(SorobanService.name);
   private readonly mockMode: boolean;
+  private readonly maxRetries: number;
 
   constructor(private readonly config: ConfigService) {
     const contractId = this.config.get<string>('CONTRACT_ID_GIST_REGISTRY');
     this.mockMode = !contractId;
+    this.maxRetries = this.config.get<number>('SOROBAN_RETRY_ATTEMPTS', 3);
 
     if (this.mockMode) {
       this.logger.warn('Soroban running in MOCK MODE — no blockchain calls will be made');
     }
   }
 
-  /**
-   * Post a gist to the GistRegistry contract.
-   * In mock mode, returns a fake transaction hash and gist ID after a short delay.
-   */
   async postGist(
     locationCell: string,
     contentHash: string,
-    author?: string,
+    _author?: string,
   ): Promise<PostGistResult> {
     if (this.mockMode) {
       await this.simulateDelay();
@@ -56,12 +75,17 @@ export class SorobanService {
       return { gistId, txHash, mock: true };
     }
 
-    throw new Error('Real Soroban integration not yet implemented');
+    return withRetry(
+      async () => {
+        // TODO: real Soroban RPC call
+        throw new Error('Real Soroban integration not yet implemented');
+      },
+      'Soroban.postGist',
+      this.maxRetries,
+      this.logger,
+    );
   }
 
-  /**
-   * Retrieve a gist record from the GistRegistry contract by ID.
-   */
   async getGist(gistId: string): Promise<GetGistResult> {
     if (this.mockMode) {
       await this.simulateDelay();
@@ -74,25 +98,32 @@ export class SorobanService {
       };
     }
 
-    throw new Error('Real Soroban integration not yet implemented');
+    return withRetry(
+      async () => {
+        throw new Error('Real Soroban integration not yet implemented');
+      },
+      'Soroban.getGist',
+      this.maxRetries,
+      this.logger,
+    );
   }
 
-  /**
-   * Fetch contract events since a given ledger sequence number.
-   * Used by the IndexerService to poll for new on-chain gists.
-   * In mock mode, returns an empty array (indexer has nothing to process in dev).
-   */
   async getEventsSince(ledger: number): Promise<GistEvent[]> {
     if (this.mockMode) {
       this.logger.debug(`MOCK getEventsSince(${ledger}) → []`);
       return [];
     }
 
-    // TODO: real Soroban RPC getEvents call when CONTRACT_ID_GIST_REGISTRY is set
-    throw new Error('Real Soroban getEvents not yet implemented');
+    return withRetry(
+      async () => {
+        throw new Error('Real Soroban getEvents not yet implemented');
+      },
+      'Soroban.getEventsSince',
+      this.maxRetries,
+      this.logger,
+    );
   }
 
-  /** Simulates 100–300ms network latency */
   private simulateDelay(): Promise<void> {
     const ms = 100 + Math.floor(Math.random() * 200);
     return new Promise((resolve) => setTimeout(resolve, ms));

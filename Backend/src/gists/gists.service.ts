@@ -6,6 +6,7 @@ import { GeoService } from '../geo/geo.service';
 import { IpfsService } from '../ipfs/ipfs.service';
 import { SorobanService } from '../soroban/soroban.service';
 import { Gist } from './entities/gist.entity';
+import { PaginatedResponse } from '../common/utils/pagination.helper';
 
 @Injectable()
 export class GistsService {
@@ -19,10 +20,8 @@ export class GistsService {
   ) {}
 
   async create(dto: CreateGistDto): Promise<Gist> {
-    // 1. Encode location cell (precision 7 ~ 153m)
     const locationCell = this.geoService.encode(dto.lat, dto.lon);
 
-    // 2. Pin content to IPFS
     const { cid } = await this.ipfsService.pinJson({
       content: dto.content,
       lat: dto.lat,
@@ -31,12 +30,10 @@ export class GistsService {
       created_at: new Date().toISOString(),
     });
 
-    // 3. Post to Soroban contract (mock in dev)
     const { gistId, txHash } = await this.sorobanService.postGist(locationCell, cid, dto.author);
 
     this.logger.log(`Gist posted → cell=${locationCell} cid=${cid} gistId=${gistId}`);
 
-    // 4. Persist to Postgres
     return this.gistRepository.create({
       content: dto.content,
       lat: dto.lat,
@@ -48,7 +45,7 @@ export class GistsService {
     });
   }
 
-  async findNearby(query: QueryGistsDto): Promise<Gist[]> {
+  async findNearby(query: QueryGistsDto): Promise<PaginatedResponse<Gist>> {
     return this.gistRepository.findNearby({
       lat: query.lat,
       lon: query.lon,

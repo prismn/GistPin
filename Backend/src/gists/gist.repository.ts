@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { Gist } from './entities/gist.entity';
+import { PaginationHelper, PaginatedResponse } from '../common/utils/pagination.helper';
 
 export interface NearbyQuery {
   lat: number;
   lon: number;
   radiusMeters?: number;
   limit?: number;
-  cursor?: string; // ISO date string — last created_at seen
+  cursor?: string; // base64 encoded cursor or raw ISO date string
 }
 
 export interface CreateGistData {
@@ -59,18 +60,20 @@ export class GistRepository {
     return result[0];
   }
 
-  async findNearby(query: NearbyQuery): Promise<Gist[]> {
+  async findNearby(query: NearbyQuery): Promise<PaginatedResponse<Gist>> {
     const { lat, lon, radiusMeters = 500, limit = 20, cursor } = query;
 
     const params: unknown[] = [lon, lat, radiusMeters, limit];
     let cursorClause = '';
 
     if (cursor) {
-      params.push(cursor);
+      // Support both base64 encoded cursors and raw ISO strings
+      const decoded = PaginationHelper.decodeCursor(cursor) ?? cursor;
+      params.push(decoded);
       cursorClause = `AND g.created_at < $${params.length}`;
     }
 
-    return this.dataSource.query<Gist[]>(
+    const items = await this.dataSource.query<Gist[]>(
       `
       SELECT
         g.id,
@@ -98,6 +101,8 @@ export class GistRepository {
       `,
       params,
     );
+
+    return PaginationHelper.buildResponse(items, limit);
   }
 
   async findByGistId(id: string): Promise<Gist | null> {
