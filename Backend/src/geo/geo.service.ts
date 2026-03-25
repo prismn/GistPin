@@ -15,7 +15,6 @@ export class GeoService {
       maxLon = 180;
     let hash = '';
     let bits = 0;
-    let bitsTotal = 0;
     let charIndex = 0;
     let isEven = true;
 
@@ -42,7 +41,6 @@ export class GeoService {
 
       isEven = !isEven;
       bits++;
-      bitsTotal++;
 
       if (bits === 5) {
         hash += BASE32[charIndex];
@@ -53,4 +51,4 @@ export class GeoService {
 
     return hash;
   }
-}
+};

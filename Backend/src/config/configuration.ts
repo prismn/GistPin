@@ -11,11 +11,9 @@ export default () => ({
   },
 
   soroban: {
-    rpcUrl:
-      process.env.SOROBAN_RPC_URL ?? 'https://soroban-testnet.stellar.org',
+    rpcUrl: process.env.SOROBAN_RPC_URL ?? 'https://soroban-testnet.stellar.org',
     networkPassphrase:
-      process.env.STELLAR_NETWORK_PASSPHRASE ??
-      'Test SDF Network ; September 2015',
+      process.env.STELLAR_NETWORK_PASSPHRASE ?? 'Test SDF Network ; September 2015',
     contractIdGistRegistry: process.env.CONTRACT_ID_GIST_REGISTRY ?? '',
     secretKey: process.env.STELLAR_SECRET_KEY ?? '',
   },

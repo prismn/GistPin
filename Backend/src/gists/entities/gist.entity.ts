@@ -1,12 +1,35 @@
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
+
+@Entity('gists')
+@Index('idx_gists_location_cell')
 export class Gist {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
-  gistId: string;
-  locationCell: string;
-  lat: number;
-  lon: number;
-  contentCid: string;
-  text: string;
-  authorAddress: string | null;
-  txHash: string;
-  createdAt: Date;
+
+  @Column({ type: 'text' })
+  content: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  location_cell: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  content_hash: string | null;
+
+  @Column({ type: 'varchar', length: 80, nullable: true })
+  stellar_gist_id: string | null;
+
+  @Column({ type: 'varchar', length: 80, nullable: true })
+  tx_hash: string | null;
+
+  /**
+   * PostGIS geography(Point, 4326) column.
+   * TypeORM has no native geography type — the real column is created
+   * via migration. This text placeholder keeps TypeORM happy while
+   * GistRepository handles all spatial reads/writes via raw SQL.
+   */
+  @Column({ type: 'text', nullable: true, select: false })
+  location: string | null;
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  created_at: Date;
 }
