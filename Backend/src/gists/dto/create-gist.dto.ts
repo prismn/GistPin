@@ -1,21 +1,18 @@
-import 'reflect-metadata';
-import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsLatitude, IsLongitude, IsString, MaxLength, IsOptional } from 'class-validator';
 
 export class CreateGistDto {
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  lat: number = 0;
-
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  lon: number = 0;
-
   @IsString()
-  text: string = '';
+  @MaxLength(280)
+  content: string;
+
+  @IsLatitude()
+  lat: number;
+
+  @IsLongitude()
+  lon: number;
 
   @IsOptional()
   @IsString()
-  authorAddress?: string;
+  @MaxLength(80)
+  author?: string;
 }

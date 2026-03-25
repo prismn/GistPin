@@ -33,10 +33,8 @@ export class SorobanService implements OnModuleInit {
 
   onModuleInit() {
     this.rpcUrl = this.config.get<string>('soroban.rpcUrl') ?? '';
-    this.networkPassphrase =
-      this.config.get<string>('soroban.networkPassphrase') ?? '';
-    this.contractId =
-      this.config.get<string>('soroban.contractIdGistRegistry') ?? '';
+    this.networkPassphrase = this.config.get<string>('soroban.networkPassphrase') ?? '';
+    this.contractId = this.config.get<string>('soroban.contractIdGistRegistry') ?? '';
 
     this.logger.log(`Soroban RPC: ${this.rpcUrl}`);
     this.logger.log(`GistRegistry contract: ${this.contractId || '(not set)'}`);

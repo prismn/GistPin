@@ -1,29 +1,18 @@
-import 'reflect-metadata';
-import {
-  IsNumber,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsLatitude, IsLongitude, IsOptional, IsNumber, Min, Max, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class QueryGistsDto {
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
+  @IsLatitude()
   @Type(() => Number)
-  lat: number = 0;
+  lat: number;
 
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
+  @IsLongitude()
   @Type(() => Number)
-  lon: number = 0;
+  lon: number;
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
+  @Min(50)
   @Max(5000)
   @Type(() => Number)
   radius?: number = 500;

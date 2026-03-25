@@ -22,21 +22,18 @@ export class IndexerService implements OnModuleInit {
 
   private async poll() {
     try {
-      const events = await this.soroban.getEventsSince(
-        this.lastProcessedLedger,
-      );
+      const events = await this.soroban.getEventsSince(this.lastProcessedLedger);
 
       if (events.length === 0) return;
 
-      this.logger.log(`Indexer: ${events.length} new event(s) from ledger ${this.lastProcessedLedger}`);
+      this.logger.log(
+        `Indexer: ${events.length} new event(s) from ledger ${this.lastProcessedLedger}`,
+      );
 
       for (const event of events) {
         // TODO: upsert each event into the gists table via GistsService / TypeORM
         this.logger.debug(`Indexed gist ${event.gistId} @ cell ${event.locationCell}`);
-        this.lastProcessedLedger = Math.max(
-          this.lastProcessedLedger,
-          event.createdAt,
-        );
+        this.lastProcessedLedger = Math.max(this.lastProcessedLedger, event.createdAt);
       }
     } catch (err) {
       this.logger.error('Indexer poll failed', err);
