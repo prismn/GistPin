@@ -7,6 +7,7 @@ import { IpfsService } from '../ipfs/ipfs.service';
 import { SorobanService } from '../soroban/soroban.service';
 import { Gist } from './entities/gist.entity';
 import { PaginatedResponse } from '../common/utils/pagination.helper';
+import { stripHtml } from 'src/common/utils/sanitize';
 
 @Injectable()
 export class GistsService {
@@ -20,10 +21,13 @@ export class GistsService {
   ) {}
 
   async create(dto: CreateGistDto): Promise<Gist> {
+    // Issue 87 — sanitize content before storing
+    const content = stripHtml(dto.content);
+
     const locationCell = this.geoService.encode(dto.lat, dto.lon);
 
     const { cid } = await this.ipfsService.pinJson({
-      content: dto.content,
+      content,
       lat: dto.lat,
       lon: dto.lon,
       location_cell: locationCell,
@@ -35,7 +39,7 @@ export class GistsService {
     this.logger.log(`Gist posted → cell=${locationCell} cid=${cid} gistId=${gistId}`);
 
     return this.gistRepository.create({
-      content: dto.content,
+      content,
       lat: dto.lat,
       lon: dto.lon,
       location_cell: locationCell,
