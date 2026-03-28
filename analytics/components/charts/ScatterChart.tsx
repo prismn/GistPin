@@ -44,13 +44,14 @@ export default function ScatterChart() {
       },
       {
         label: 'Trendline',
-        type: 'line' as const,
         data: [
           { x: 0, y: reg.intercept },
           { x: 365, y: reg.slope * 365 + reg.intercept },
         ],
         borderColor: 'red',
         borderWidth: 2,
+        showLine: true,
+        pointRadius: 0,
       },
     ],
   };

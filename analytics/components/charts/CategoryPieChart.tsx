@@ -44,15 +44,13 @@ const options = {
         generateLabels: (chart: ChartJS) => {
           const dataset = chart.data.datasets[0];
           return (chart.data.labels as string[]).map((label, i) => {
-            const meta = chart.getDatasetMeta(0);
-            const hidden = meta.data[i]?.hidden ?? false;
             const value = (dataset.data[i] as number);
             const pct = ((value / total) * 100).toFixed(1);
             return {
               text: `${label} (${pct}%)`,
               fillStyle: (dataset.backgroundColor as string[])[i],
               strokeStyle: (dataset.borderColor as string[])[i],
-              hidden,
+              hidden: !chart.getDataVisibility(i),
               index: i,
               datasetIndex: 0,
               lineWidth: 2,
@@ -68,9 +66,7 @@ const options = {
       ) => {
         const index = legendItem.index ?? 0;
         const chart = legend.chart;
-        const meta = chart.getDatasetMeta(0);
-        const item = meta.data[index];
-        item.hidden = !item.hidden;
+        chart.toggleDataVisibility(index);
         chart.update();
       },
     },
