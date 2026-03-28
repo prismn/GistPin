@@ -3,6 +3,8 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import type { TooltipItem } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import ExportButton from '@/components/ui/ExportButton';
+import { exportRowsToCsv } from '@/lib/export';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -44,15 +46,13 @@ const options = {
         generateLabels: (chart: ChartJS) => {
           const dataset = chart.data.datasets[0];
           return (chart.data.labels as string[]).map((label, i) => {
-            const meta = chart.getDatasetMeta(0);
-            const hidden = meta.data[i]?.hidden ?? false;
             const value = (dataset.data[i] as number);
             const pct = ((value / total) * 100).toFixed(1);
             return {
               text: `${label} (${pct}%)`,
               fillStyle: (dataset.backgroundColor as string[])[i],
               strokeStyle: (dataset.borderColor as string[])[i],
-              hidden,
+              hidden: !chart.getDataVisibility(i),
               index: i,
               datasetIndex: 0,
               lineWidth: 2,
@@ -68,9 +68,7 @@ const options = {
       ) => {
         const index = legendItem.index ?? 0;
         const chart = legend.chart;
-        const meta = chart.getDatasetMeta(0);
-        const item = meta.data[index];
-        item.hidden = !item.hidden;
+        chart.toggleDataVisibility(index);
         chart.update();
       },
     },
@@ -89,6 +87,22 @@ const options = {
 export default function CategoryPieChart() {
   return (
     <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <ExportButton
+        onExport={(onProgress) =>
+          exportRowsToCsv({
+            filenamePrefix: 'category-distribution',
+            filters: {
+              dataset: 'All categories',
+            },
+            rows: categories.map((category) => ({
+              category: category.label,
+              count: category.count,
+              percentage: ((category.count / total) * 100).toFixed(1),
+            })),
+            onProgress,
+          })
+        }
+      />
       <Pie data={data} options={options} />
     </div>
   );

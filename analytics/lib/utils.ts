@@ -1,4 +1,4 @@
-import { GistData } from '@/types';
+import type { Category, GistData } from '@/types';
 
 export const categories = ['Tech', 'Finance', 'AI', 'Web3'];
 
@@ -7,7 +7,7 @@ export function generateGistData(count = 500): GistData[] {
     id: `gist-${i}`,
     age: Math.floor(Math.random() * 365),
     engagement: Math.floor(Math.random() * 1000),
-    category: categories[Math.floor(Math.random() * categories.length)] as any,
+    category: categories[Math.floor(Math.random() * categories.length)] as Category,
   }));
 }
 

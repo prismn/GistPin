@@ -9,6 +9,8 @@ import {
   LineElement,
 } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
+import ExportButton from '@/components/ui/ExportButton';
+import { exportRowsToCsv } from '@/lib/export';
 import { generateGistData, regression } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 
@@ -44,19 +46,38 @@ export default function ScatterChart() {
       },
       {
         label: 'Trendline',
-        type: 'line' as const,
         data: [
           { x: 0, y: reg.intercept },
           { x: 365, y: reg.slope * 365 + reg.intercept },
         ],
         borderColor: 'red',
         borderWidth: 2,
+        showLine: true,
+        pointRadius: 0,
       },
     ],
   };
 
   return (
     <div>
+      <ExportButton
+        onExport={(onProgress) =>
+          exportRowsToCsv({
+            filenamePrefix: 'scatter-chart',
+            filters: {
+              category: category ?? 'All',
+            },
+            rows: filtered.map((gist) => ({
+              id: gist.id,
+              age_days: gist.age,
+              engagement: gist.engagement,
+              category: gist.category,
+            })),
+            onProgress,
+          })
+        }
+      />
+
       <select onChange={(e) => setCategory(e.target.value || null)}>
         <option value="">All</option>
         <option value="Tech">Tech</option>

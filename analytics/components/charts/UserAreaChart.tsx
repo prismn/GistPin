@@ -13,6 +13,8 @@ import {
 import type { Plugin, TooltipItem } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useRef, useMemo } from 'react';
+import ExportButton from '@/components/ui/ExportButton';
+import { exportRowsToCsv } from '@/lib/export';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -181,6 +183,23 @@ export default function UserAreaChart() {
 
   return (
     <div style={{ position: 'relative' }}>
+      <ExportButton
+        onExport={(onProgress) =>
+          exportRowsToCsv({
+            filenamePrefix: 'users-area-chart',
+            filters: {
+              window: 'Last 90 days',
+            },
+            rows: labels.map((label, index) => ({
+              date: label,
+              returning_users: returning[index],
+              new_users: newUsers[index],
+              total_users: returning[index] + newUsers[index],
+            })),
+            onProgress,
+          })
+        }
+      />
       <Line ref={chartRef} data={data} options={options} plugins={[gradientPlugin]} />
     </div>
   );
