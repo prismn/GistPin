@@ -9,6 +9,10 @@ import {
   LineElement,
 } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
+import { regression } from '@/lib/utils';
+import { useState } from 'react';
+import { useScatterDataQuery } from '@/lib/analytics-queries';
+import { getScatterCategories } from '@/lib/analytics-data';
 import ExportButton from '@/components/ui/ExportButton';
 import { exportRowsToCsv } from '@/lib/export';
 import { generateGistData, regression } from '@/lib/utils';
@@ -25,8 +29,15 @@ const colors: Record<string, string> = {
 
 export default function ScatterChart() {
   const [category, setCategory] = useState<string | null>(null);
+  const { data, isLoading, error } = useScatterDataQuery();
 
-  const data = useMemo(() => generateGistData(), []);
+  if (isLoading || !data) {
+    return <p>Loading scatter plot...</p>;
+  }
+
+  if (error) {
+    return <p>Unable to load scatter plot.</p>;
+  }
 
   const filtered = category
     ? data.filter((d) => d.category === category)
@@ -52,6 +63,8 @@ export default function ScatterChart() {
         ],
         borderColor: 'red',
         borderWidth: 2,
+        pointRadius: 0,
+        showLine: true,
         showLine: true,
         pointRadius: 0,
       },
@@ -80,10 +93,11 @@ export default function ScatterChart() {
 
       <select onChange={(e) => setCategory(e.target.value || null)}>
         <option value="">All</option>
-        <option value="Tech">Tech</option>
-        <option value="Finance">Finance</option>
-        <option value="AI">AI</option>
-        <option value="Web3">Web3</option>
+        {getScatterCategories().map((item) => (
+          <option key={item} value={item}>
+            {item}
+          </option>
+        ))}
       </select>
 
       <Scatter

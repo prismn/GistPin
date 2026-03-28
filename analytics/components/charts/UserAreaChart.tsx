@@ -13,42 +13,11 @@ import {
 import type { Plugin, TooltipItem } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useRef, useMemo } from 'react';
+import { useUserActivityQuery } from '@/lib/analytics-queries';
 import ExportButton from '@/components/ui/ExportButton';
 import { exportRowsToCsv } from '@/lib/export';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
-
-// ── Data generation ──────────────────────────────────────────────────────────
-
-function generateDays(count: number): { labels: string[]; newUsers: number[]; returning: number[] } {
-  const labels: string[] = [];
-  const newUsers: number[] = [];
-  const returning: number[] = [];
-
-  const base = Date.now() - (count - 1) * 86_400_000;
-
-  for (let i = 0; i < count; i++) {
-    const d = new Date(base + i * 86_400_000);
-    labels.push(
-      d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-    );
-
-    // Returning users: stable base with gentle upward trend + weekend dips
-    const weekday = d.getDay();
-    const isWeekend = weekday === 0 || weekday === 6;
-    const trendRet = 120 + i * 0.8;
-    const noiseRet = (Math.random() - 0.5) * 30;
-    returning.push(Math.round(Math.max(0, trendRet + noiseRet - (isWeekend ? 25 : 0))));
-
-    // New users: more volatile, mid-period spike, grows toward the end
-    const spike = i > 38 && i < 52 ? 40 : 0;
-    const trendNew = 60 + i * 0.4 + spike;
-    const noiseNew = (Math.random() - 0.5) * 25;
-    newUsers.push(Math.round(Math.max(0, trendNew + noiseNew)));
-  }
-
-  return { labels, newUsers, returning };
-}
 
 // ── Gradient plugin ──────────────────────────────────────────────────────────
 
@@ -83,10 +52,21 @@ function sparseLabels(labels: string[]): (string | null)[] {
 
 export default function UserAreaChart() {
   const chartRef = useRef<ChartJS<'line'>>(null);
+  const { data: activityData, isLoading, error } = useUserActivityQuery();
 
-  const { labels, newUsers, returning } = useMemo(() => generateDays(90), []);
+  const labels = useMemo(() => activityData?.labels ?? [], [activityData]);
+  const newUsers = useMemo(() => activityData?.newUsers ?? [], [activityData]);
+  const returning = useMemo(() => activityData?.returning ?? [], [activityData]);
 
   const displayLabels = useMemo(() => sparseLabels(labels), [labels]);
+
+  if (isLoading || !activityData) {
+    return <p>Loading user activity...</p>;
+  }
+
+  if (error) {
+    return <p>Unable to load user activity.</p>;
+  }
 
   const data = {
     labels: displayLabels,

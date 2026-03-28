@@ -9,39 +9,35 @@ import {
   Legend,
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
+import { useRadarDataQuery } from '@/lib/analytics-queries';
 import ExportButton from '@/components/ui/ExportButton';
 import { exportRowsToCsv } from '@/lib/export';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Tooltip, Legend);
 
 export default function RadarChart() {
-  const labels = [
-    'Mobile',
-    'Desktop',
-    'API',
-    'Web',
-    'New Users',
-    'Power Users',
-  ];
+  const { data, isLoading, error } = useRadarDataQuery();
 
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'This Month',
-        data: [80, 60, 70, 90, 50, 40],
-        backgroundColor: 'rgba(54,162,235,0.3)',
-        borderColor: 'blue',
-      },
-      {
-        label: 'Last Month',
-        data: [60, 50, 60, 70, 40, 30],
-        backgroundColor: 'rgba(255,99,132,0.3)',
-        borderColor: 'red',
-      },
-    ],
-  };
+  if (isLoading || !data) {
+    return <p>Loading engagement segments...</p>;
+  }
 
+  if (error) {
+    return <p>Unable to load engagement segments.</p>;
+  }
+
+  return (
+    <Radar
+      data={{
+        labels: data.labels,
+        datasets: data.datasets.map((dataset, index) => ({
+          label: dataset.label,
+          data: dataset.values,
+          backgroundColor: index === 0 ? 'rgba(54,162,235,0.3)' : 'rgba(255,99,132,0.3)',
+          borderColor: index === 0 ? 'blue' : 'red',
+        })),
+      }}
+    />
   return (
     <div>
       <ExportButton
