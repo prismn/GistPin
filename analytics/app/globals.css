@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* ── Custom scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #d1d5db; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: #374151; }
+
+/* ── Sidebar transition ────────────────────────────────────────── */
+.sidebar-transition {
+  transition: width 220ms ease, transform 220ms ease;
+}
+
+/* ── Active nav link indicator ─────────────────────────────────── */
+.nav-active {
+  position: relative;
+}
+.nav-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: #6366f1;
+}
