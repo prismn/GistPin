@@ -3,6 +3,8 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import type { TooltipItem } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import ExportButton from '@/components/ui/ExportButton';
+import { exportRowsToCsv } from '@/lib/export';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -85,6 +87,22 @@ const options = {
 export default function CategoryPieChart() {
   return (
     <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <ExportButton
+        onExport={(onProgress) =>
+          exportRowsToCsv({
+            filenamePrefix: 'category-distribution',
+            filters: {
+              dataset: 'All categories',
+            },
+            rows: categories.map((category) => ({
+              category: category.label,
+              count: category.count,
+              percentage: ((category.count / total) * 100).toFixed(1),
+            })),
+            onProgress,
+          })
+        }
+      />
       <Pie data={data} options={options} />
     </div>
   );
