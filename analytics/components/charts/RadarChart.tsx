@@ -9,6 +9,8 @@ import {
   Legend,
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
+import ExportButton from '@/components/ui/ExportButton';
+import { exportRowsToCsv } from '@/lib/export';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -40,5 +42,25 @@ export default function RadarChart() {
     ],
   };
 
-  return <Radar data={data} />;
+  return (
+    <div>
+      <ExportButton
+        onExport={(onProgress) =>
+          exportRowsToCsv({
+            filenamePrefix: 'radar-chart',
+            filters: {
+              comparison: 'This Month vs Last Month',
+            },
+            rows: labels.map((label, index) => ({
+              metric: label,
+              this_month: data.datasets[0].data[index],
+              last_month: data.datasets[1].data[index],
+            })),
+            onProgress,
+          })
+        }
+      />
+      <Radar data={data} />
+    </div>
+  );
 }
