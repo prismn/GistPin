@@ -1,4 +1,5 @@
 import { type Category, type GistData } from '@/types';
+import type { Category, GistData } from '@/types';
 
 export const categories = ['Tech', 'Finance', 'AI', 'Web3'];
 
