@@ -7,6 +7,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         style={{
           margin: 0,
           fontFamily: 'system-ui, sans-serif',
+          background: '#eef2ff',
           background: '#f8fafc',
           color: '#111827',
         }}
