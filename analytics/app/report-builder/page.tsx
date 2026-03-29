@@ -146,10 +146,11 @@ export default function ReportBuilderPage() {
       <section
         style={{
           display: 'grid',
-          gridTemplateColumns: '320px minmax(0, 1fr)',
+          gridTemplateColumns: 'minmax(0, 1fr)',
           gap: 24,
           alignItems: 'start',
         }}
+        className="md:grid-cols-[320px_minmax(0,1fr)]"
       >
         <aside
           style={{
@@ -158,8 +159,6 @@ export default function ReportBuilderPage() {
             padding: '24px',
             border: '1px solid rgba(148,163,184,0.16)',
             boxShadow: '0 18px 44px rgba(15,23,42,0.08)',
-            position: 'sticky',
-            top: 24,
           }}
         >
           <div

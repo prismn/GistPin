@@ -213,7 +213,7 @@ export default function ComparisonPage() {
       <section
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
           gap: 20,
           marginBottom: 24,
         }}
@@ -272,7 +272,8 @@ export default function ComparisonPage() {
       >
         <h2 style={{ marginTop: 0, fontSize: 24 }}>Side-by-side comparison</h2>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
           <thead>
             <tr>
               <th style={{ textAlign: 'left', padding: '12px 10px' }}>Metric</th>
@@ -301,6 +302,7 @@ export default function ComparisonPage() {
             })}
           </tbody>
         </table>
+        </div>
       </section>
     </main>
   );

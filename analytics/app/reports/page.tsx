@@ -137,9 +137,10 @@ export default function ReportsPage() {
         style={{
           display: 'grid',
           gap: 28,
-          gridTemplateColumns: 'minmax(0, 1.15fr) minmax(320px, 0.85fr)',
+          gridTemplateColumns: 'minmax(0, 1fr)',
           alignItems: 'start',
         }}
+        className="lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]"
       >
         <div
           style={{

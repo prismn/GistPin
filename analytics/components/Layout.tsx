@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import BookmarkButton from '@/components/ui/BookmarkButton';
 
 // ── SVG icons ─────────────────────────────────────────────────────────────────
 
@@ -320,6 +321,9 @@ export default function Layout({ children }: LayoutProps) {
                 </button>
               ))}
             </div>
+
+            {/* Bookmark button */}
+            <BookmarkButton />
 
             {/* Dark mode toggle */}
             <button
