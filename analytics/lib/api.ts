@@ -10,6 +10,7 @@ import type {
   ScatterCategory,
   ApiResult,
 } from '@/types/analytics';
+import { processLargeDataset } from '@/lib/compression';
 
 // ── Mode detection ────────────────────────────────────────────────────────────
 
@@ -33,7 +34,14 @@ async function apiFetch<T>(path: string): Promise<ApiResult<T>> {
     }
 
     const data: T = await res.json();
-    return { ok: true, data };
+
+    // Compress large responses before client-side processing (issue #150)
+    const { value, compressionInfo } = await processLargeDataset(data);
+    if (compressionInfo) {
+      console.debug(`[api] ${path} — ${compressionInfo}`);
+    }
+
+    return { ok: true, data: value };
   } catch (err) {
     return {
       ok: false,

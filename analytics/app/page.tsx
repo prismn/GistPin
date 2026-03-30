@@ -7,6 +7,7 @@ import LiveGistCounter from '@/components/LiveGistCounter';
 import ChartSkeleton from '@/components/ui/ChartSkeleton';
 import ChartErrorBoundary from '@/components/ui/ChartErrorBoundary';
 import { AnomalyBadge, AnomalySidebar } from '@/components/ui/AnomalyAlerts';
+import { DataQualityBadge } from '@/components/ui/DataQualityBadge';
 import AnnotatedChart from '@/components/ui/AnnotatedChart';
 import { detectAnomalies } from '@/lib/anomaly';
 import { createUserActivityData } from '@/lib/analytics-data';
@@ -62,6 +63,7 @@ export default function Page() {
             </h2>
             <AnomalyBadge anomalies={anomalies} chartId="New Users" />
             <AnomalyBadge anomalies={anomalies} chartId="Returning Users" />
+            <DataQualityBadge labels={activityData.labels} values={activityData.newUsers} metricName="New Users" />
           </div>
           <AnnotatedChart chartId="user-area" labels={activityData.labels}>
             <ChartErrorBoundary title="New vs Returning Users">

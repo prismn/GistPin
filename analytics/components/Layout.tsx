@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import BookmarkButton from '@/components/ui/BookmarkButton';
+import SearchBar from '@/components/ui/SearchBar';
+import KeyboardShortcuts from '@/components/ui/KeyboardShortcuts';
 
 // ── SVG icons ─────────────────────────────────────────────────────────────────
 
@@ -123,6 +125,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   // Sidebar: expanded (lg default) or icon-only
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -132,6 +135,8 @@ export default function Layout({ children }: LayoutProps) {
   const [dark, setDark] = useState(false);
   // Selected date range
   const [dateRange, setDateRange] = useState<DateRange>('30D');
+  // Search open state (controlled by keyboard shortcut)
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Initialise dark mode from storage / system preference
   useEffect(() => {
@@ -159,6 +164,11 @@ export default function Layout({ children }: LayoutProps) {
   const toggleSidebar = useCallback(() => {
     setSidebarExpanded((v) => !v);
   }, []);
+
+  // Keyboard shortcut: E → navigate to export page
+  const handleExport = useCallback(() => {
+    router.push('/export');
+  }, [router]);
 
   // ── Sidebar content (shared between desktop + mobile drawer) ──────────────
 
@@ -305,6 +315,9 @@ export default function Layout({ children }: LayoutProps) {
           </h1>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            {/* Search bar (issue #155) */}
+            <SearchBar open={searchOpen} onClose={() => setSearchOpen(false)} />
+
             {/* Date range selector */}
             <div className="flex items-center rounded-lg border border-gray-200 bg-gray-50 p-0.5 dark:border-gray-700 dark:bg-gray-800">
               {DATE_RANGES.map((range) => (
@@ -353,6 +366,13 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Keyboard shortcuts (issue #152) */}
+      <KeyboardShortcuts
+        onSearch={() => setSearchOpen(true)}
+        onToggleDark={toggleDark}
+        onExport={handleExport}
+      />
     </div>
   );
 }
