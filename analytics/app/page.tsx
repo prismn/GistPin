@@ -1,10 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import KPIGrid from '@/components/KPICard';
 import LiveGistCounter from '@/components/LiveGistCounter';
-import ChartSkeleton from '@/components/ui/ChartSkeleton';
+import ChartSkeleton, { KPICardSkeleton } from '@/components/ui/ChartSkeleton';
 import ChartErrorBoundary from '@/components/ui/ChartErrorBoundary';
 import { AnomalyBadge, AnomalySidebar } from '@/components/ui/AnomalyAlerts';
 import { DataQualityBadge } from '@/components/ui/DataQualityBadge';
@@ -12,12 +12,15 @@ import AnnotatedChart from '@/components/ui/AnnotatedChart';
 import { detectAnomalies } from '@/lib/anomaly';
 import { createUserActivityData } from '@/lib/analytics-data';
 
+// Priority 2: simple charts
 const LazyDailyGistsChart = dynamic(() => import('@/components/charts/DailyGistsChart'), {
   loading: () => <ChartSkeleton />,
 });
 const LazyUserAreaChart = dynamic(() => import('@/components/charts/UserAreaChart'), {
   loading: () => <ChartSkeleton />,
 });
+
+// Priority 3: complex visualizations
 const LazyScatterChart = dynamic(() => import('@/components/charts/ScatterChart'), {
   loading: () => <ChartSkeleton />,
 });
@@ -31,8 +34,21 @@ const LazyLocationTable = dynamic(() => import('@/components/ui/LocationTable'),
   loading: () => <ChartSkeleton />,
 });
 
+// Progressive loading stages: 0 = KPIs only, 1 = simple charts, 2 = complex charts
+function useProgressiveLoad() {
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    // Stage 1: simple charts after KPIs render
+    const t1 = setTimeout(() => setStage(1), 100);
+    // Stage 2: complex visualizations last
+    const t2 = setTimeout(() => setStage(2), 400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  return stage;
+}
+
 export default function Page() {
-  // Compute anomalies from user activity data
+  const stage = useProgressiveLoad();
   const activityData = useMemo(() => createUserActivityData(90), []);
   const anomalies = useMemo(
     () => [
@@ -44,10 +60,10 @@ export default function Page() {
 
   return (
     <div className="space-y-6">
-      {/* KPI row */}
+      {/* Priority 1: KPI row — shown immediately */}
       <KPIGrid />
 
-      {/* Live counter + User area chart */}
+      {/* Priority 2: Live counter + User area chart */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 lg:col-span-1">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -65,67 +81,90 @@ export default function Page() {
             <AnomalyBadge anomalies={anomalies} chartId="Returning Users" />
             <DataQualityBadge labels={activityData.labels} values={activityData.newUsers} metricName="New Users" />
           </div>
-          <AnnotatedChart chartId="user-area" labels={activityData.labels}>
-            <ChartErrorBoundary title="New vs Returning Users">
-              <LazyUserAreaChart />
-            </ChartErrorBoundary>
-          </AnnotatedChart>
+          {stage >= 1 ? (
+            <AnnotatedChart chartId="user-area" labels={activityData.labels}>
+              <ChartErrorBoundary title="New vs Returning Users">
+                <LazyUserAreaChart />
+              </ChartErrorBoundary>
+            </AnnotatedChart>
+          ) : (
+            <ChartSkeleton />
+          )}
         </div>
       </div>
 
-      {/* Daily gists */}
+      {/* Priority 2: Daily gists */}
       <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
           Daily Gists · Last 30 Days
         </h2>
-        <ChartErrorBoundary title="Daily Gists">
-          <LazyDailyGistsChart />
-        </ChartErrorBoundary>
+        {stage >= 1 ? (
+          <ChartErrorBoundary title="Daily Gists">
+            <LazyDailyGistsChart />
+          </ChartErrorBoundary>
+        ) : (
+          <ChartSkeleton />
+        )}
       </div>
 
-      {/* Charts row */}
+      {/* Priority 3: Complex charts */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Gist Age vs Engagement
           </h2>
-          <ChartErrorBoundary title="Scatter">
-            <LazyScatterChart />
-          </ChartErrorBoundary>
+          {stage >= 2 ? (
+            <ChartErrorBoundary title="Scatter">
+              <LazyScatterChart />
+            </ChartErrorBoundary>
+          ) : (
+            <ChartSkeleton />
+          )}
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Platform Usage
           </h2>
-          <ChartErrorBoundary title="Radar">
-            <LazyRadarChart />
-          </ChartErrorBoundary>
+          {stage >= 2 ? (
+            <ChartErrorBoundary title="Radar">
+              <LazyRadarChart />
+            </ChartErrorBoundary>
+          ) : (
+            <ChartSkeleton />
+          )}
         </div>
       </div>
 
-      {/* Bottom row */}
+      {/* Priority 3: Bottom row */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Category Distribution
           </h2>
-          <ChartErrorBoundary title="Category Distribution">
-            <LazyCategoryPieChart />
-          </ChartErrorBoundary>
+          {stage >= 2 ? (
+            <ChartErrorBoundary title="Category Distribution">
+              <LazyCategoryPieChart />
+            </ChartErrorBoundary>
+          ) : (
+            <ChartSkeleton />
+          )}
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             Active Locations
           </h2>
-          <ChartErrorBoundary title="Locations">
-            <LazyLocationTable />
-          </ChartErrorBoundary>
+          {stage >= 2 ? (
+            <ChartErrorBoundary title="Locations">
+              <LazyLocationTable />
+            </ChartErrorBoundary>
+          ) : (
+            <ChartSkeleton />
+          )}
         </div>
       </div>
 
-      {/* Anomaly sidebar (floating trigger) */}
       <AnomalySidebar anomalies={anomalies} />
     </div>
   );
