@@ -12,7 +12,7 @@ import {
 } from 'chart.js';
 import type { Plugin, TooltipItem } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { useRef, useMemo } from 'react';
+import { memo, useCallback, useEffect, useRef, useMemo } from 'react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -71,9 +71,32 @@ function sparseLabels(labels: string[]): (string | null)[] {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function DailyGistsChart() {
+function DailyGistsChart() {
   const chartRef = useRef<ChartJS<'line'>>(null);
   const points = useMemo(() => generateLast30Days(), []);
+  const rafRef = useRef<number | null>(null);
+
+  // Debounced resize with requestAnimationFrame (issue #147)
+  const handleResize = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      chartRef.current?.resize();
+    });
+  }, []);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const debounced = () => {
+      clearTimeout(timer);
+      timer = setTimeout(handleResize, 300);
+    };
+    window.addEventListener('resize', debounced);
+    return () => {
+      window.removeEventListener('resize', debounced);
+      clearTimeout(timer);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [handleResize]);
 
   const rawLabels  = points.map((p) => p.label);
   const fullLabels = points.map((p) => p.fullLabel);
@@ -151,3 +174,5 @@ export default function DailyGistsChart() {
     </div>
   );
 }
+
+export default memo(DailyGistsChart);
