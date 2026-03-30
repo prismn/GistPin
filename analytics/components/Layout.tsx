@@ -49,6 +49,47 @@ function ExportIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+function ErrorsIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  );
+}
+
+function SegmentsIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="23" y1="11" x2="17" y2="11" />
+      <line x1="20" y1="8" x2="20" y2="14" />
+    </svg>
+  );
+}
+
+function WordCloudIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function CollabIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+    </svg>
+  );
+}
+
 function MenuIcon({ size = 22 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -104,10 +145,14 @@ function GistPinLogo() {
 // ── Nav config ────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { label: 'Overview',    href: '/',           icon: OverviewIcon },
-  { label: 'Users',       href: '/users',       icon: UsersIcon },
-  { label: 'Geographic',  href: '/geographic',  icon: GeoIcon },
-  { label: 'Export',      href: '/export',      icon: ExportIcon },
+  { label: 'Overview',      href: '/',              icon: OverviewIcon },
+  { label: 'Users',         href: '/users',          icon: UsersIcon },
+  { label: 'Geographic',    href: '/geographic',     icon: GeoIcon },
+  { label: 'Export',        href: '/export',         icon: ExportIcon },
+  { label: 'Errors',        href: '/errors',         icon: ErrorsIcon },
+  { label: 'Segments',      href: '/segments',       icon: SegmentsIcon },
+  { label: 'Word Cloud',    href: '/word-cloud',     icon: WordCloudIcon },
+  { label: 'Collaboration', href: '/collaboration',  icon: CollabIcon },
 ] as const;
 
 const DATE_RANGES = ['7D', '30D', '90D', '1Y'] as const;
