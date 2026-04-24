@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useMemo, useState, useEffect } from 'react';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import KPIGrid from '@/components/KPICard';
 import LiveGistCounter from '@/components/LiveGistCounter';
@@ -64,9 +63,7 @@ const LazyLocationTable = dynamic(() => import('@/components/ui/LocationTable'),
 function useProgressiveLoad() {
   const [stage, setStage] = useState(0);
   useEffect(() => {
-    // Stage 1: simple charts after KPIs render
     const t1 = setTimeout(() => setStage(1), 100);
-    // Stage 2: complex visualizations last
     const t2 = setTimeout(() => setStage(2), 400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
@@ -138,14 +135,14 @@ export default function Page() {
             <DataQualityBadge labels={activityData.labels} values={activityData.newUsers} metricName="New Users" />
           </div>
           {stage >= 1 ? (
-            <ChartExportCard title="New vs Returning Users">
             <SwipeableChart>
-              <AnnotatedChart chartId="user-area" labels={activityData.labels}>
-                <ChartErrorBoundary title="New vs Returning Users">
-                  <LazyUserAreaChart />
-                </ChartErrorBoundary>
-              </AnnotatedChart>
-            </ChartExportCard>
+              <ChartExportCard title="New vs Returning Users">
+                <AnnotatedChart chartId="user-area" labels={activityData.labels}>
+                  <ChartErrorBoundary title="New vs Returning Users">
+                    <LazyUserAreaChart />
+                  </ChartErrorBoundary>
+                </AnnotatedChart>
+              </ChartExportCard>
             </SwipeableChart>
           ) : (
             <ChartSkeleton />
@@ -159,11 +156,6 @@ export default function Page() {
           Daily Gists · Last 30 Days
         </h2>
         {stage >= 1 ? (
-          <ChartExportCard title="Daily Gists">
-            <ChartErrorBoundary title="Daily Gists">
-              <LazyDailyGistsChart />
-            </ChartErrorBoundary>
-          </ChartExportCard>
           <SwipeableChart>
             <ChartErrorBoundary title="Daily Gists">
               <LazyDailyGistsChart />
@@ -181,11 +173,6 @@ export default function Page() {
             Gist Age vs Engagement
           </h2>
           {stage >= 2 ? (
-            <ChartExportCard title="Gist Age vs Engagement">
-              <ChartErrorBoundary title="Scatter">
-                <LazyScatterChart />
-              </ChartErrorBoundary>
-            </ChartExportCard>
             <SwipeableChart>
               <ChartErrorBoundary title="Scatter">
                 <LazyScatterChart />
@@ -201,11 +188,6 @@ export default function Page() {
             Platform Usage
           </h2>
           {stage >= 2 ? (
-            <ChartExportCard title="Platform Usage">
-              <ChartErrorBoundary title="Radar">
-                <LazyRadarChart />
-              </ChartErrorBoundary>
-            </ChartExportCard>
             <SwipeableChart>
               <ChartErrorBoundary title="Radar">
                 <LazyRadarChart />
@@ -224,11 +206,6 @@ export default function Page() {
             Category Distribution
           </h2>
           {stage >= 2 ? (
-            <ChartExportCard title="Category Distribution">
-              <ChartErrorBoundary title="Category Distribution">
-                <LazyCategoryPieChart />
-              </ChartErrorBoundary>
-            </ChartExportCard>
             <SwipeableChart>
               <ChartErrorBoundary title="Category Distribution">
                 <LazyCategoryPieChart />
